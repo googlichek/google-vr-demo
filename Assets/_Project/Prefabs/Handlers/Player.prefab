@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ec88173ee3be3c4680d45c1eaf75ca5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _minAngle: 20
+  _minAngle: 15
   _maxAngle: 90
   _forwardSpeedMultiplier: 0.2
   _sideSpeedMultiplier: 20
