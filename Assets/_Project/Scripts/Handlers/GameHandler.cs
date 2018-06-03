@@ -32,6 +32,7 @@ namespace CardboardVRProto
 
 		private int _startTime = 0;
 		private int _timeDelta = 0;
+		private int _lastBlockIndex = 0;
 		private SceneLoadingHandler _sceneLoadingHandler = null;
 
 		void Start()
@@ -115,7 +116,10 @@ namespace CardboardVRProto
 
 		private int GetBlockIndex(List<GameObject> blocks)
 		{
-			var index = Random.Range(0, blocks.Count - 1);
+			var index = Random.Range(0, blocks.Count);
+			if (index == _lastBlockIndex) index = GetBlockIndex(blocks);
+
+			_lastBlockIndex = index;
 			return index;
 		}
 
