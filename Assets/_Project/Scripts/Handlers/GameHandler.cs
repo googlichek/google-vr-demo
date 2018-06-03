@@ -16,7 +16,7 @@ namespace CardboardVRProto
 		[SerializeField] private List<GameObject> _trackBlocksEasy = new List<GameObject>();
 		[SerializeField] private List<GameObject> _trackBlocksMedium = new List<GameObject>();
 
-		private List<GameObject> _currentTrackBlocks = new List<GameObject>();
+		private readonly List<GameObject> _currentTrackBlocks = new List<GameObject>();
 
 		private int _startTime = 0;
 
@@ -34,7 +34,6 @@ namespace CardboardVRProto
 
 		public void Restart()
 		{
-			Debug.Log("Restart");
 		}
 
 		private void InitializeBlockSpawning(Vector3 lastBlockPosition)

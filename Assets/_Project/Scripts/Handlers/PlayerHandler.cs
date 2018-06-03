@@ -8,6 +8,11 @@ namespace CardboardVRProto
 	{
 		private const string Horizontal = GlobalVariables.Horizontal;
 		private const int LockAngle = 360;
+		private const int LayerMask = 1 << (int) Layers.Wall;
+
+
+		private const float SphereRadius = 0.5f;
+		private const float RayDistance = 4;
 
 		[Header("Tweakable Variables")]
 		[SerializeField] [Range(0, 180)] private int _minAngle = 20;
@@ -62,13 +67,15 @@ namespace CardboardVRProto
 		{
 			if (directionVector == Vector3.zero) return;
 
-			transform.Translate(directionVector * _sideSpeedMultiplier * Time.deltaTime);
+			if (CheckIfMovementIsPossible(directionVector))
+				transform.Translate(directionVector * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
 		private void MoveWithKeyboardInput()
 		{
 			var delta = Input.GetAxis(GlobalVariables.Horizontal);
-			transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
+			if (CheckIfMovementIsPossible((delta * transform.right).normalized))
+				transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
 		private void SpeedUp()
@@ -77,6 +84,20 @@ namespace CardboardVRProto
 
 			if (!(_speed < _maximumSpeed)) return;
 			_speed += _forwardSpeedMultiplier;
+		}
+
+		private bool CheckIfMovementIsPossible(Vector3 directionVector)
+		{
+			Vector3 rayOrigin = transform.position;
+
+			RaycastHit hitTarget;
+			Ray ray = new Ray(rayOrigin, directionVector);
+
+			bool isHit =
+				Physics.SphereCast(ray, SphereRadius, out hitTarget, RayDistance, LayerMask);
+			if (isHit && hitTarget.distance <= RayDistance) return false;
+
+			return true;
 		}
 	}
 }
