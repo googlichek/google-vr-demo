@@ -9,12 +9,16 @@ namespace CardboardVRProto
 	{
 		private const int BlockLength = GlobalVariables.TrackBlockLength;
 		private const int OffsetMultiplier = 4;
+		private const int Minute = 60;
 
 		[Header("Track Creation Variables")]
 		[SerializeField] private Transform _trackRoot = null;
 		[SerializeField] private List<GameObject> _trackBlocksEasy = new List<GameObject>();
+		[SerializeField] private List<GameObject> _trackBlocksMedium = new List<GameObject>();
 
 		private List<GameObject> _currentTrackBlocks = new List<GameObject>();
+
+		private int _startTime = 0;
 
 		void Start()
 		{
@@ -24,6 +28,8 @@ namespace CardboardVRProto
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, BlockLength));
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, 2 * BlockLength));
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, 3 * BlockLength));
+
+			_startTime = Mathf.RoundToInt(Time.time);
 		}
 
 		public void Restart()
@@ -31,16 +37,39 @@ namespace CardboardVRProto
 			Debug.Log("Restart");
 		}
 
-		private void HandleTrackBlockSpawning(Vector3 lastBlockPosition)
+		private void InitializeBlockSpawning(Vector3 lastBlockPosition)
 		{
-			var index = GetBlockIndex(_trackBlocksEasy);
+			var currentTime = Mathf.RoundToInt(Time.time);
 
 			var spawnPosition = new Vector3(
 				_trackRoot.position.x,
 				_trackRoot.position.y,
 				_trackRoot.position.z + lastBlockPosition.z + OffsetMultiplier * BlockLength);
-			SpawnTrackBlock(_trackBlocksEasy, index, spawnPosition);
 
+			var timeDelta = currentTime - _startTime;
+			HandleProgression(timeDelta, spawnPosition);
+		}
+
+		private void HandleProgression(int timeDelta, Vector3 spawnPosition)
+		{
+			if (timeDelta <= Minute)
+			{
+				HandleBlockSpawnProcess(_trackBlocksEasy, spawnPosition);
+			}
+			else if (timeDelta > Minute && timeDelta <= 2 * Minute)
+			{
+				HandleBlockSpawnProcess(_trackBlocksMedium, spawnPosition);
+			}
+			else
+			{
+				Restart();
+			}
+		}
+
+		private void HandleBlockSpawnProcess(List<GameObject> blocks,Vector3 spawnPosition)
+		{
+			var index = GetBlockIndex(blocks);
+			SpawnTrackBlock(blocks, index, spawnPosition);
 			CleanUpBlocks();
 		}
 
@@ -65,7 +94,7 @@ namespace CardboardVRProto
 			block.transform.localPosition = position;
 
 			block.GetComponentInChildren<TrackTriggerHandler>().TriggeredEvent +=
-				HandleTrackBlockSpawning;
+				InitializeBlockSpawning;
 
 			_currentTrackBlocks.Add(block);
 		}
