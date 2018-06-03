@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
@@ -11,29 +12,39 @@ namespace CardboardVRProto
 		private const int OffsetMultiplier = 4;
 		private const int Minute = 60;
 
+		private const float BlockDestructionTimeout = 0.5f;
+
+		private readonly List<GameObject> _currentTrackBlocks = new List<GameObject>();
+
 		[Header("Track Creation Variables")]
 		[SerializeField] private Transform _trackRoot = null;
 		[SerializeField] private List<GameObject> _trackBlocksEasy = new List<GameObject>();
 		[SerializeField] private List<GameObject> _trackBlocksMedium = new List<GameObject>();
 
-		private readonly List<GameObject> _currentTrackBlocks = new List<GameObject>();
-
 		private int _startTime = 0;
+		private SceneLoadingHandler _sceneLoadingHandler = null;
 
 		void Start()
 		{
 			InputTracking.Recenter();
 
+			_sceneLoadingHandler = FindObjectOfType<SceneLoadingHandler>();
+			_sceneLoadingHandler.SceneStartEvent += StartGame;
+
 			SpawnTrackBlock(_trackBlocksEasy, 0, Vector3.zero);
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, BlockLength));
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, 2 * BlockLength));
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, 3 * BlockLength));
-
-			_startTime = Mathf.RoundToInt(Time.time);
 		}
 
 		public void Restart()
 		{
+			_sceneLoadingHandler.LoadScene();
+		}
+
+		private void StartGame()
+		{
+			_startTime = Mathf.RoundToInt(Time.time);
 		}
 
 		private void InitializeBlockSpawning(Vector3 lastBlockPosition)
@@ -78,7 +89,7 @@ namespace CardboardVRProto
 			if (block == null) return;
 
 			_currentTrackBlocks.Remove(block);
-			Destroy(block);
+			StartCoroutine(DestroyBlock(block));
 		}
 
 		private int GetBlockIndex(List<GameObject> blocks)
@@ -96,6 +107,12 @@ namespace CardboardVRProto
 				InitializeBlockSpawning;
 
 			_currentTrackBlocks.Add(block);
+		}
+
+		private IEnumerator DestroyBlock(GameObject block)
+		{
+			yield return new WaitForSeconds(BlockDestructionTimeout);
+			Destroy(block);
 		}
 	}
 }

@@ -51,3 +51,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1f96e1a079482d4a9c07cef3ec23302, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _trackRoot: {fileID: 0}
+  _trackBlocksEasy: []
+  _trackBlocksMedium: []

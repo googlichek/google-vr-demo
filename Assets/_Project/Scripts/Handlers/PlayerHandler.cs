@@ -7,9 +7,9 @@ namespace CardboardVRProto
 	public class PlayerHandler : MonoBehaviour
 	{
 		private const string Horizontal = GlobalVariables.Horizontal;
+
 		private const int LockAngle = 360;
 		private const int LayerMask = 1 << (int) Layers.Wall;
-
 
 		private const float RayDistance = 4;
 
@@ -21,16 +21,23 @@ namespace CardboardVRProto
 		[SerializeField] [Range(0, 1000)] private int _maximumSpeed = 500;
 
 		private Camera _mainCamera = null;
+		private SceneLoadingHandler _sceneLoadingHandler = null;
 
 		private float _speed = 0;
+
+		private bool _isMovementEnabled = false;
 
 		void Start()
 		{
 			_mainCamera = Camera.main;
+			_sceneLoadingHandler = FindObjectOfType<SceneLoadingHandler>();
+			_sceneLoadingHandler.SceneStartEvent += EnableMovement;
 		}
 
 		void FixedUpdate()
 		{
+			if (!_isMovementEnabled) return;
+
 			SpeedUp();
 
 #if UNITY_ANDROID
@@ -41,6 +48,11 @@ namespace CardboardVRProto
 #if UNITY_EDITOR
 			MoveWithKeyboardInput();
 #endif
+		}
+
+		private void EnableMovement()
+		{
+			_isMovementEnabled = true;
 		}
 
 		private Vector3 GetDirectionVector()
