@@ -13,22 +13,22 @@ namespace CardboardVRProto
 		[Header("Tweakable Variables")]
 		[SerializeField] [Range(0, 180)] private int _minAngle = 20;
 		[SerializeField] [Range(0, 180)] private int _maxAngle = 90;
-		[SerializeField] [Range(0, 100)] private int _forwardSpeedMultiplier = 10;
+		[SerializeField] [Range(0.01f, 1)] private float _forwardSpeedMultiplier = 0.01f;
 		[SerializeField] [Range(0, 100)] private int _sideSpeedMultiplier = 10;
 		[SerializeField] [Range(0, 1000)] private int _maximumSpeed = 500;
 
-		private Rigidbody _rigidbody = null;
 		private Camera _mainCamera = null;
+
+		private float _speed = 0;
 
 		void Start()
 		{
-			_rigidbody = GetComponent<Rigidbody>();
 			_mainCamera = Camera.main;
 		}
 
 		void FixedUpdate()
 		{
-			AccumulateForwardVelocity();
+			SpeedUp();
 
 #if UNITY_ANDROID
 			var sideVector = GetDirectionVector();
@@ -72,11 +72,12 @@ namespace CardboardVRProto
 			transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
-		private void AccumulateForwardVelocity()
+		private void SpeedUp()
 		{
-			if (!(_rigidbody.velocity.z < _maximumSpeed)) return;
+			transform.Translate(transform.forward * Time.deltaTime * _speed);
 
-			_rigidbody.AddForce(transform.forward * _forwardSpeedMultiplier, ForceMode.Force);
+			if (!(_speed < _maximumSpeed)) return;
+			_speed += _forwardSpeedMultiplier;
 		}
 	}
 }
