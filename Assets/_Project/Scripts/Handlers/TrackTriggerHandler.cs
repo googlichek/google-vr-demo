@@ -2,6 +2,9 @@
 
 namespace CardboardVRProto
 {
+	/// <summary>
+	/// Trigger for warning it's listeners that it detected trigger collision with player.
+	/// </summary>
 	[RequireComponent(typeof(Collider))]
 	public class TrackTriggerHandler : MonoBehaviour
 	{

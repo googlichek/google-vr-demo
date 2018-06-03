@@ -2,6 +2,9 @@
 
 namespace CardboardVRProto
 {
+	/// <summary>
+	/// Handles player movement & input.
+	/// </summary>
 	[RequireComponent(typeof(Rigidbody))]
 	[RequireComponent(typeof(Collider))]
 	public class PlayerHandler : MonoBehaviour

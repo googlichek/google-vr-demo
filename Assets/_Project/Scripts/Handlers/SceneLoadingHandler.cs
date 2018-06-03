@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 namespace CardboardVRProto
 {
+	/// <summary>
+	/// Handles scene loading.
+	/// </summary>
 	public class SceneLoadingHandler : MonoBehaviour
 	{
 		public delegate void OnSceneStart();

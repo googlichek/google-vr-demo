@@ -6,9 +6,18 @@ using UnityEngine.XR;
 
 namespace CardboardVRProto
 {
+	/// <summary>
+	/// Handles game flow.
+	/// Listens to all events that obstacles send.
+	/// </summary>
 	public class GameHandler : MonoBehaviour
 	{
 		private const int BlockLength = GlobalVariables.TrackBlockLength;
+
+		/// <summary>
+		/// I'm creating 4 track blocks on start, so when new block is created
+		/// it should be pushed forward by 4 length units.
+		/// </summary>
 		private const int OffsetMultiplier = 4;
 		private const int Minute = 60;
 
@@ -22,6 +31,7 @@ namespace CardboardVRProto
 		[SerializeField] private List<GameObject> _trackBlocksMedium = new List<GameObject>();
 
 		private int _startTime = 0;
+		private int _timeDelta = 0;
 		private SceneLoadingHandler _sceneLoadingHandler = null;
 
 		void Start()
@@ -37,6 +47,17 @@ namespace CardboardVRProto
 			SpawnTrackBlock(_trackBlocksEasy, 0, new Vector3(0, 0, 3 * BlockLength));
 		}
 
+		void Update()
+		{
+			// Restart game, if time limit of 2 minutes was reached.
+			var currentTime = Mathf.RoundToInt(Time.time);
+			_timeDelta = currentTime - _startTime;
+			if (_timeDelta > 2 * Minute) Restart();
+		}
+
+		/// <summary>
+		/// Restarts demo scene.
+		/// </summary>
 		public void Restart()
 		{
 			_sceneLoadingHandler.LoadScene();
@@ -47,32 +68,32 @@ namespace CardboardVRProto
 			_startTime = Mathf.RoundToInt(Time.time);
 		}
 
+		/// <summary>
+		/// Initializes new track block creation, when player enters trigger.
+		/// </summary>
+		/// <param name="lastBlockPosition">Position of the block from which event was triggered.</param>
 		private void InitializeBlockSpawning(Vector3 lastBlockPosition)
 		{
-			var currentTime = Mathf.RoundToInt(Time.time);
-
 			var spawnPosition = new Vector3(
 				_trackRoot.position.x,
 				_trackRoot.position.y,
 				_trackRoot.position.z + lastBlockPosition.z + OffsetMultiplier * BlockLength);
 
-			var timeDelta = currentTime - _startTime;
-			HandleProgression(timeDelta, spawnPosition);
+			HandleProgression(spawnPosition);
 		}
 
-		private void HandleProgression(int timeDelta, Vector3 spawnPosition)
+		/// <summary>
+		/// Spawn blocks in accordance with the amount of passed time.
+		/// </summary>
+		private void HandleProgression(Vector3 spawnPosition)
 		{
-			if (timeDelta <= Minute)
+			if (_timeDelta <= Minute)
 			{
 				HandleBlockSpawnProcess(_trackBlocksEasy, spawnPosition);
 			}
-			else if (timeDelta > Minute && timeDelta <= 2 * Minute)
+			else if (_timeDelta > Minute && _timeDelta <= 2 * Minute)
 			{
 				HandleBlockSpawnProcess(_trackBlocksMedium, spawnPosition);
-			}
-			else
-			{
-				Restart();
 			}
 		}
 

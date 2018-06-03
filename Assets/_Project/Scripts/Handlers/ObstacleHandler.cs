@@ -2,6 +2,9 @@
 
 namespace CardboardVRProto
 {
+	/// <summary>
+	/// Class for handling obstacle behaviour
+	/// </summary>
 	[RequireComponent(typeof(Collider))]
 	public class ObstacleHandler : MonoBehaviour
 	{
