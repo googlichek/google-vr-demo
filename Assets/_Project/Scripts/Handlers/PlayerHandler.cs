@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.XR;
 
 namespace CardboardVRProto
 {
@@ -8,6 +7,7 @@ namespace CardboardVRProto
 	[RequireComponent(typeof(Collider))]
 	public class PlayerHandler : MonoBehaviour
 	{
+		private const string Horizontal = GlobalVariables.Horizontal;
 		private const int LockAngle = 360;
 
 		[Header("Tweakable Variables")]
@@ -22,16 +22,14 @@ namespace CardboardVRProto
 
 		void Start()
 		{
-			InputTracking.Recenter();
-
 			_rigidbody = GetComponent<Rigidbody>();
 			_mainCamera = Camera.main;
-
-			StartCoroutine(AccumulateForwardVelocity());
 		}
 
 		void FixedUpdate()
 		{
+			AccumulateForwardVelocity();
+
 #if UNITY_ANDROID
 			var sideVector = GetDirectionVector();
 			MoveWithHead(sideVector);
@@ -74,13 +72,11 @@ namespace CardboardVRProto
 			transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
-		private IEnumerator AccumulateForwardVelocity()
+		private void AccumulateForwardVelocity()
 		{
-			while (_rigidbody.velocity.z < _maximumSpeed)
-			{
-				yield return new WaitForEndOfFrame();
-				_rigidbody.AddForce(transform.forward * _forwardSpeedMultiplier, ForceMode.Force);
-			}
+			if (!(_rigidbody.velocity.z < _maximumSpeed)) return;
+
+			_rigidbody.AddForce(transform.forward * _forwardSpeedMultiplier, ForceMode.Force);
 		}
 	}
 }

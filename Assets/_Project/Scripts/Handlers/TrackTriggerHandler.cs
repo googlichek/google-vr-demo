@@ -3,16 +3,18 @@
 namespace CardboardVRProto
 {
 	[RequireComponent(typeof(Collider))]
-	public class ObstacleHandler : MonoBehaviour
+	public class TrackTriggerHandler : MonoBehaviour
 	{
+		public delegate void OnTriggered(Vector3 currentBlockPosition);
+		public event OnTriggered TriggeredEvent;
+
 		private const string PlayerTag = GlobalVariables.PlayerTag;
 
 		private void OnTriggerEnter(Collider bumpCollider)
 		{
 			if (!bumpCollider.gameObject.CompareTag(PlayerTag)) return;
 
-			var gameHandler = FindObjectOfType<GameHandler>();
-			if (gameHandler != null) gameHandler.Restart();
+			if (TriggeredEvent != null) TriggeredEvent(transform.parent.localPosition);
 		}
 	}
 }
