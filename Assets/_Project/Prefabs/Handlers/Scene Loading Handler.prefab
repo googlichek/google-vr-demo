@@ -136,9 +136,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _background: {fileID: 114160193257354698}
-  _fadeInEase: 14
-  _fadeOutEase: 15
-  _fadeDuration: 2
+  _fadeInEase: 15
+  _fadeOutEase: 14
+  _fadeInDuration: 0.75
+  _fadeOutDuration: 2.5
 --- !u!114 &114742442402078444
 MonoBehaviour:
   m_ObjectHideFlags: 1

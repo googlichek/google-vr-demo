@@ -23,26 +23,9 @@ namespace CardboardVRProto
 
 		private AsyncOperation _sceneLoading;
 
-		private bool _fadeInIsComplete = false;
-
-		void OnEnable()
+		void Start()
 		{
-			SceneManager.sceneLoaded += OnSceneLoaded;
-		}
-
-		public void LoadScene()
-		{
-			_fadeInIsComplete = false;
-			_background
-				.DOFade(1, _fadeInDuration)
-				.SetEase(_fadeInEase)
-				.OnComplete(() => _fadeInIsComplete = true);
-
-			StartCoroutine(LoadLevelAsync(SceneIndex));
-		}
-
-		private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-		{
+			_background.DOKill();
 			_background.DOFade(1, 0);
 			_background
 				.DOFade(0, _fadeOutDuration)
@@ -51,6 +34,16 @@ namespace CardboardVRProto
 				{
 					if (SceneStartEvent != null) SceneStartEvent();
 				});
+		}
+
+		public void LoadScene()
+		{
+			_background.DOKill();
+			_background.DOFade(0, 0);
+			_background
+				.DOFade(1, _fadeInDuration)
+				.SetEase(_fadeInEase)
+				.OnComplete(() => StartCoroutine(LoadLevelAsync(SceneIndex)));
 		}
 
 		private IEnumerator LoadLevelAsync(int sceneIndex,
@@ -63,8 +56,7 @@ namespace CardboardVRProto
 
 			while (!_sceneLoading.allowSceneActivation)
 			{
-				if (_sceneLoading.progress >= SceneLoadingProgressThreshold &&
-				    _fadeInIsComplete)
+				if (_sceneLoading.progress >= SceneLoadingProgressThreshold)
 				{
 					_sceneLoading.allowSceneActivation = true;
 				}
