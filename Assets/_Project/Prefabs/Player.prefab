@@ -218,7 +218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _minAngle: 20
   _maxAngle: 90
-  _forwardSpeedMultiplier: 0.25
+  _forwardSpeedMultiplier: 0.2
   _sideSpeedMultiplier: 20
   _maximumSpeed: 150
 --- !u!124 &124916793103823898
