@@ -11,7 +11,6 @@ namespace CardboardVRProto
 		private const int LayerMask = 1 << (int) Layers.Wall;
 
 
-		private const float SphereRadius = 0.5f;
 		private const float RayDistance = 4;
 
 		[Header("Tweakable Variables")]
@@ -73,7 +72,7 @@ namespace CardboardVRProto
 
 		private void MoveWithKeyboardInput()
 		{
-			var delta = Input.GetAxis(GlobalVariables.Horizontal);
+			var delta = Input.GetAxis(Horizontal);
 			if (CheckIfMovementIsPossible((delta * transform.right).normalized))
 				transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
 		}
@@ -94,7 +93,7 @@ namespace CardboardVRProto
 			Ray ray = new Ray(rayOrigin, directionVector);
 
 			bool isHit =
-				Physics.SphereCast(ray, SphereRadius, out hitTarget, RayDistance, LayerMask);
+				Physics.Raycast(ray, out hitTarget, RayDistance, LayerMask);
 			if (isHit && hitTarget.distance <= RayDistance) return false;
 
 			return true;
