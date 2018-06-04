@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 
 namespace CardboardVRProto
 {
@@ -19,43 +20,102 @@ namespace CardboardVRProto
 		[Header("Tweakable Variables")]
 		[SerializeField] [Range(0, 180)] private int _minAngle = 20;
 		[SerializeField] [Range(0, 180)] private int _maxAngle = 90;
-		[SerializeField] [Range(0.01f, 1)] private float _forwardSpeedMultiplier = 0.01f;
+		[SerializeField] [Range(0, 180)] private int _jumpRotationThresholdAngle = 45;
+		[SerializeField] [Range(0.01f, 100)] private float _forwardSpeedMultiplier = 0.01f;
 		[SerializeField] [Range(0, 100)] private int _sideSpeedMultiplier = 10;
+		[SerializeField] [Range(0, 1000)] private int _rotationSpeedMultiplier = 50;
 		[SerializeField] [Range(0, 1000)] private int _maximumSpeed = 500;
 
+		[Header("Tweening variables")]
+		[SerializeField] [Range(0, 1)] private float _rotationCorrectionDuration = 0.5f;
+		[SerializeField] private Ease _rotationCorrectionEase = Ease.Linear;
+
 		private Camera _mainCamera = null;
+		private Rigidbody _rigidbody = null;
 		private SceneLoadingHandler _sceneLoadingHandler = null;
 
-		private float _speed = 0;
+		private Quaternion _defaultRotation = Quaternion.identity;
 
 		private bool _isMovementEnabled = false;
+		private bool _isRotationEnabled = false;
+
+		private float _speed = 0;
 
 		void Start()
 		{
 			_mainCamera = Camera.main;
+			_rigidbody = GetComponent<Rigidbody>();
+			_rigidbody.useGravity = false;
+
 			_sceneLoadingHandler = FindObjectOfType<SceneLoadingHandler>();
-			_sceneLoadingHandler.SceneStartEvent += EnableMovement;
+			_sceneLoadingHandler.SceneStartEvent += EnableGravity;
+
+			_defaultRotation = transform.rotation;
 		}
 
 		void FixedUpdate()
 		{
-			if (!_isMovementEnabled) return;
-
-			SpeedUp();
+			if (_isMovementEnabled)
+			{
+				SpeedUp();
 
 #if UNITY_ANDROID
-			var sideVector = GetDirectionVector();
-			MoveWithHead(sideVector);
+				var sideVector = GetDirectionVector();
+				MoveWithHead(sideVector);
 #endif
 
 #if UNITY_EDITOR
-			MoveWithKeyboardInput();
+				MoveWithKeyboardInput();
 #endif
+			}
+
+			if (_isRotationEnabled)
+			{
+#if UNITY_ANDROID
+				var sideVector = GetDirectionVector();
+				RotateWithHead(sideVector);
+#endif
+
+#if UNITY_EDITOR
+				RotateWithKeyboardInput();
+#endif
+			}
 		}
 
-		private void EnableMovement()
+		public void EnableMovement()
 		{
 			_isMovementEnabled = true;
+			_isRotationEnabled = false;
+
+			CheckRotation();
+		}
+
+		public void EnableRotation()
+		{
+			_isMovementEnabled = false;
+			_isRotationEnabled = true;
+		}
+
+		private void EnableGravity()
+		{
+			_rigidbody.useGravity = true;
+		}
+
+		private void CheckRotation()
+		{
+			var delta = transform.localRotation.eulerAngles.y % LockAngle;
+
+			if (delta >= LockAngle - _jumpRotationThresholdAngle && delta <= LockAngle ||
+			    delta >= 0 && delta <= _jumpRotationThresholdAngle)
+			{
+				Vector3 rotationVector = _defaultRotation.eulerAngles;
+				transform
+					.DORotate(rotationVector, _rotationCorrectionDuration)
+					.SetEase(_rotationCorrectionEase);
+				return;
+			}
+
+			FindObjectOfType<GameHandler>().Restart();
 		}
 
 		private Vector3 GetDirectionVector()
@@ -85,6 +145,20 @@ namespace CardboardVRProto
 				transform.Translate(directionVector * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
+		private void RotateWithHead(Vector3 directionVector)
+		{
+			if (directionVector == Vector3.zero) return;
+
+			if (directionVector == Vector3.right)
+			{
+				transform.Rotate(Vector3.up * _rotationSpeedMultiplier * Time.deltaTime);
+			}
+			else if (directionVector == Vector3.left)
+			{
+				transform.Rotate(Vector3.down * _rotationSpeedMultiplier * Time.deltaTime);
+			}
+		}
+
 		private void MoveWithKeyboardInput()
 		{
 			var delta = Input.GetAxis(Horizontal);
@@ -92,12 +166,26 @@ namespace CardboardVRProto
 				transform.Translate(delta * transform.right * _sideSpeedMultiplier * Time.deltaTime);
 		}
 
+		private void RotateWithKeyboardInput()
+		{
+			var delta = Input.GetAxis(Horizontal);
+			transform.Rotate(delta * Vector3.up * _rotationSpeedMultiplier * Time.deltaTime);
+		}
+
 		private void SpeedUp()
 		{
-			transform.Translate(transform.forward * Time.deltaTime * _speed);
+			//transform.Translate(transform.forward * Time.deltaTime * _speed);
 
-			if (!(_speed < _maximumSpeed)) return;
-			_speed += _forwardSpeedMultiplier;
+			//if (!(_speed < _maximumSpeed)) return;
+			//_speed += _forwardSpeedMultiplier;
+
+			if (_rigidbody.velocity.z < _maximumSpeed)
+				_rigidbody.AddForce(transform.forward * _forwardSpeedMultiplier);
+		}
+
+		private void ControlGravity()
+		{
+			Debug.Log(_rigidbody.velocity);
 		}
 
 		private bool CheckIfMovementIsPossible(Vector3 directionVector)
