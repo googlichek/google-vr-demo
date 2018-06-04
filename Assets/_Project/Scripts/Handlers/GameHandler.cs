@@ -21,7 +21,7 @@ namespace CardboardVRProto
 		private const int OffsetMultiplier = 4;
 		private const int Minute = 60;
 
-		private const float BlockDestructionTimeout = 0.5f;
+		private const float BlockDestructionTimeout = 2.5f;
 
 		private readonly List<GameObject> _currentTrackBlocks = new List<GameObject>();
 
