@@ -35,6 +35,8 @@ namespace CardboardVRProto
 		private int _lastBlockIndex = 0;
 		private SceneLoadingHandler _sceneLoadingHandler = null;
 
+		private bool _restartIsTriggered = false;
+
 		void Start()
 		{
 			InputTracking.Recenter();
@@ -61,6 +63,9 @@ namespace CardboardVRProto
 		/// </summary>
 		public void Restart()
 		{
+			if (_restartIsTriggered) return;
+
+			_restartIsTriggered = true;
 			_sceneLoadingHandler.LoadScene();
 		}
 
