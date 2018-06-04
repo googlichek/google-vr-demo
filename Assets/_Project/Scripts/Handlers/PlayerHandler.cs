@@ -84,10 +84,7 @@ namespace CardboardVRProto
 
 		public void EnableMovement()
 		{
-			_isMovementEnabled = true;
-			_isRotationEnabled = false;
-
-			CheckRotation();
+			CheckPlayerIsFine();
 		}
 
 		public void EnableRotation()
@@ -101,8 +98,10 @@ namespace CardboardVRProto
 			_rigidbody.useGravity = true;
 		}
 
-		private void CheckRotation()
+		private void CheckPlayerIsFine()
 		{
+			_isRotationEnabled = false;
+
 			var delta = transform.localRotation.eulerAngles.y % LockAngle;
 
 			if (delta >= LockAngle - _jumpRotationThresholdAngle && delta <= LockAngle ||
@@ -111,7 +110,11 @@ namespace CardboardVRProto
 				Vector3 rotationVector = _defaultRotation.eulerAngles;
 				transform
 					.DORotate(rotationVector, _rotationCorrectionDuration)
-					.SetEase(_rotationCorrectionEase);
+					.SetEase(_rotationCorrectionEase)
+					.OnComplete(() =>
+					{
+						_isMovementEnabled = true;
+					});
 				return;
 			}
 

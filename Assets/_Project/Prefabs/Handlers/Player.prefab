@@ -223,7 +223,7 @@ MonoBehaviour:
   _sideSpeedMultiplier: 20
   _rotationSpeedMultiplier: 200
   _maximumSpeed: 100
-  _rotationCorrectionDuration: 0.4
+  _rotationCorrectionDuration: 0.35
   _rotationCorrectionEase: 7
 --- !u!124 &124916793103823898
 Behaviour:
